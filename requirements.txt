@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+httpx
+python-dotenv
+python-multipart
+google-genai
+beautifulsoup4
+lxml
