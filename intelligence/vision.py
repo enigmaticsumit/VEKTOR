@@ -1,31 +1,28 @@
-import os
+
+import base64
 import json
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+import httpx
 
-load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
+OLLAMA_URL = "http://localhost:11434/api/generate"
+MODEL = "qwen2.5vl:3b"
 
-if not API_KEY:
-    raise ValueError("GEMINI_API_KEY missing from .env")
-
-client = genai.Client(api_key=API_KEY)
-
-MODEL = "gemini-3.8-flash"
 
 async def analyze_disaster_image(image_bytes: bytes, mime_type: str):
+
+    image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
     prompt = """
     You are VEKTOR, a disaster intelligence assistant.
 
-    Analyze this image for possible:
-    - Flooding
-    - Landslides
-    - Earthquake damage
-    - Snowfall
-    - Road damage
-    - Building damage
+    Carefully analyze this image for:
+    1. Flooding
+    2. Landslides
+    3. Earthquake damage
+    4. Snowfall
+    5. Road damage
+    6. Building damage
+    7. Visible people who may need rescue
 
     Return ONLY valid JSON in this format:
 
@@ -34,27 +31,44 @@ async def analyze_disaster_image(image_bytes: bytes, mime_type: str):
         "disaster_type": "Flood",
         "severity": "High",
         "confidence": 0.85,
-        "visual_evidence": ["Water covering the road"],
+        "visible_people": 4,
+        "visual_evidence": [
+            "Water covering the road",
+            "Vehicles partially submerged"
+        ],
         "recommended_action": "Avoid the flooded road",
-        "verification_status": "AI visual assessment; requires human verification"
+        "verification_status": "AI preliminary assessment; human verification required"
     }
 
-    Do not claim certainty beyond what is visible.
-    If no disaster is visible, set disaster_detected to false.
+    Rules:
+    - Never invent visual evidence.
+    - Do not assume a disaster if evidence is unclear.
+    - Do not estimate people's weight or exact age.
+    - Count only visibly identifiable people.
+    - If no disaster is visible, set disaster_detected to false.
+    - Confidence must be between 0 and 1.
     """
 
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=[
-            types.Part.from_bytes(
-                data=image_bytes,
-                mime_type=mime_type
-            ),
-            prompt
-        ],
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json"
-        )
-    )
+    payload = {
+        "model": MODEL,
+        "prompt": prompt,
+        "images": [image_base64],
+        "stream": False,
+        "format": "json",
+        "options": {
+            "temperature": 0.2
+        }
+    }
 
-    return json.loads(response.text)
+    async with httpx.AsyncClient(timeout=180) as client:
+
+        response = await client.post(
+            OLLAMA_URL,
+            json=payload
+        )
+
+        response.raise_for_status()
+
+        result = response.json()
+
+        return json.loads(result["response"])
