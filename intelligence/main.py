@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from news import fetch_disaster_news
 from weather import fetch_current_weather
 from fastapi import UploadFile, File, HTTPException
@@ -10,6 +11,14 @@ app = FastAPI(
     title="VEKTOR - Disaster Intelligence",
     description="AI-powered disaster intelligence platform",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")
