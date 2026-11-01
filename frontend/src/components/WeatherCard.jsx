@@ -22,16 +22,22 @@ export default function WeatherCard({ weatherData }) {
     );
   }
 
-  if (weatherData.status === 'error' || weatherData.error) {
+  if (weatherData.status === 'rate_limited' || weatherData.status === 'error' || weatherData.error || !weatherData.weather) {
+    const isRateLimited = weatherData.status === 'rate_limited';
     return (
-      <div className="rounded-xl bg-[#141416] border border-zinc-800/80 p-5">
-        <div className="flex items-center gap-2 text-amber-400 text-xs font-medium mb-1">
-          <AlertCircle className="w-4 h-4" />
-          <span>Weather Data Warning</span>
+      <div className="rounded-xl bg-[#141416] border border-zinc-800/80 p-5 space-y-2">
+        <div className="flex items-center gap-2 text-amber-400 text-xs font-medium">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{isRateLimited ? 'Meteorological Telemetry Rate Limited' : 'Weather Data Notice'}</span>
         </div>
-        <p className="text-xs text-zinc-400">
-          {weatherData.message || weatherData.error || 'Unable to retrieve meteorological telemetry.'}
+        <p className="text-xs text-zinc-400 leading-relaxed">
+          {weatherData.message || weatherData.error || 'Meteorological telemetry is temporarily unavailable.'}
         </p>
+        {weatherData.coordinates && (
+          <div className="text-[11px] font-mono text-zinc-500 pt-1 border-t border-zinc-800/60">
+            Coordinates: {weatherData.coordinates.latitude?.toFixed(2)}°, {weatherData.coordinates.longitude?.toFixed(2)}°
+          </div>
+        )}
       </div>
     );
   }
@@ -165,10 +171,15 @@ export default function WeatherCard({ weatherData }) {
       </div>
 
       {/* Footer attribution & time */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-800/60">
-        <span className="flex items-center gap-1">
-          Source: <strong className="text-zinc-400 font-normal">{source}</strong>
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-500 pt-1 border-t border-zinc-800/60">
+        <div className="flex items-center gap-2">
+          <span>Source: <strong className="text-zinc-400 font-normal">{source}</strong></span>
+          {weatherData.cached && (
+            <span className="text-[10px] text-zinc-500 bg-zinc-900 px-1.5 py-0.2 rounded border border-zinc-800">
+              Cached Telemetry
+            </span>
+          )}
+        </div>
         {formattedTime && (
           <span className="flex items-center gap-1 text-[10px]">
             <Clock className="w-3 h-3 text-zinc-600" />

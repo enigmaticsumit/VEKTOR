@@ -1,4 +1,3 @@
-
 import asyncio
 
 from news import fetch_disaster_news
@@ -32,8 +31,12 @@ async def generate_intelligence_report(
             )
         except Exception as error:
             image_result = {
-                "status": "error",
-                "message": str(error)
+                "status": "unavailable",
+                "message": (
+                    f"Vision AI inference is currently unavailable: {str(error)}"
+                ),
+                "error": str(error),
+                "disaster_detected": None
             }
 
     return {

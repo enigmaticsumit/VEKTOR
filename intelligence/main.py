@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from news import fetch_disaster_news
@@ -62,12 +65,17 @@ async def analyze_image(file: UploadFile = File(...)):
     if len(image_bytes) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Image must be under 10 MB.")
 
-    result = await analyze_disaster_image(
-        image_bytes,
-        file.content_type
-    )
-
-    return result
+    try:
+        result = await analyze_disaster_image(
+            image_bytes,
+            file.content_type
+        )
+        return result
+    except Exception as error:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Vision inference service is unavailable: {str(error)}"
+        )
 
 @app.post("/analyze")
 async def intelligence_report(

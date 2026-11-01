@@ -1,5 +1,6 @@
 """FastAPI application for the VEKTOR Logistics Brain."""
 
+import os
 from pathlib import Path
 from typing import Literal
 
@@ -102,7 +103,9 @@ def create_plan(request: PlanRequest) -> dict:
     mission_id, created_at = database.save_mission(mission)
     return {"id": mission_id, **mission, "created_at": created_at}
 
-INTELLIGENCE_API = "https://vektor-intelligence.onrender.com/analyze"
+INTELLIGENCE_API = os.getenv(
+    "INTELLIGENCE_API", "https://vektor-intelligence.onrender.com/analyze"
+)
 
 
 @app.post("/full-response")

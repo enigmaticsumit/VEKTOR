@@ -32,18 +32,24 @@ export default function VisionAnalysisCard({ imageAnalysis, uploadedImageUrl }) 
     );
   }
 
-  // Handle backend vision error
-  if (imageAnalysis.status === 'error' || imageAnalysis.error) {
+  // Handle backend vision error or unavailable service
+  if (imageAnalysis.status === 'unavailable' || imageAnalysis.status === 'error' || imageAnalysis.error) {
     return (
-      <div className="rounded-xl bg-[#141416] border border-red-900/30 p-5">
-        <div className="flex items-center gap-2 text-red-400 text-xs font-medium uppercase tracking-wider mb-2">
-          <AlertTriangle className="w-4 h-4" />
-          <span>Vision Analysis Error</span>
+      <div className="rounded-xl bg-[#141416] border border-amber-900/30 p-5 space-y-3">
+        <div className="flex items-center gap-2 text-amber-400 text-xs font-medium uppercase tracking-wider">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>Vision Analysis Notice</span>
         </div>
-        <p className="text-xs text-zinc-400">
-          The vision inference pipeline encountered an error: {imageAnalysis.message || imageAnalysis.error}
+        <p className="text-xs text-zinc-300 leading-relaxed">
+          {imageAnalysis.message || imageAnalysis.error || 'The vision inference pipeline is currently unavailable.'}
         </p>
-        <div className="mt-4 flex items-center justify-between text-[11px] text-zinc-500 border-t border-zinc-800 pt-3">
+        <div className="p-2.5 rounded-lg bg-zinc-900/70 border border-zinc-800 text-[11px] text-zinc-400">
+          <span className="font-semibold text-zinc-300 block mb-0.5">Incident Isolation Notice</span>
+          <span>
+            Open-source news signals, meteorological telemetry, and relief supply coordination remain fully active for this incident.
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-[11px] text-zinc-500 border-t border-zinc-800 pt-2.5">
           <div className="flex items-center gap-1.5">
             <Cpu className="w-3.5 h-3.5 text-zinc-400" />
             <span>Image analysis powered by Qwen2.5-VL 3B</span>
