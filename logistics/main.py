@@ -102,7 +102,7 @@ def create_plan(request: PlanRequest) -> dict:
     mission_id, created_at = database.save_mission(mission)
     return {"id": mission_id, **mission, "created_at": created_at}
 
-INTELLIGENCE_API = "http://127.0.0.1:8001/analyze"
+INTELLIGENCE_API = "https://vektor-intelligence.onrender.com/analyze"
 
 
 @app.post("/full-response")
