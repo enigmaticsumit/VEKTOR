@@ -60,7 +60,7 @@ async def analyze_image(file: UploadFile = File(...)):
 
     return result
 
-@app.post("/intelligence-report")
+@app.post("/analyze")
 async def intelligence_report(
     location: str = Form("Jammu"),
     file: UploadFile = File(None)

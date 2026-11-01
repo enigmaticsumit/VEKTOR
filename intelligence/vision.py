@@ -4,7 +4,7 @@ import json
 import httpx
 
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_URL = "http://10.81.40.113:11434/api/generate"
 MODEL = "qwen2.5vl:3b"
 
 
