@@ -52,7 +52,7 @@ export default function VisionAnalysisCard({ imageAnalysis, uploadedImageUrl }) 
         <div className="flex items-center justify-between text-[11px] text-zinc-500 border-t border-zinc-800 pt-2.5">
           <div className="flex items-center gap-1.5">
             <Cpu className="w-3.5 h-3.5 text-zinc-400" />
-            <span>Image analysis powered by Qwen2.5-VL 3B</span>
+            <span>Configured Engine: {imageAnalysis?.model || (imageAnalysis?.provider === 'gemini' ? 'gemini-3.1-flash-lite' : 'Google Gemini / Ollama')}</span>
           </div>
           <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono text-[10px]">
             AI model
@@ -212,7 +212,9 @@ export default function VisionAnalysisCard({ imageAnalysis, uploadedImageUrl }) 
       <div className="pt-3 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-500">
         <div className="flex items-center gap-1.5">
           <Cpu className="w-3.5 h-3.5 text-blue-400" />
-          <span className="text-zinc-400 font-medium">Image analysis powered by Qwen2.5-VL 3B</span>
+          <span className="text-zinc-400 font-medium">
+            Image analysis powered by {imageAnalysis?.model ? `${imageAnalysis.model}` : (imageAnalysis?.provider === 'gemini' ? 'gemini-3.1-flash-lite' : 'Qwen2.5-VL 3B')}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono text-[10px] border border-zinc-700/60">

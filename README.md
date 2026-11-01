@@ -22,8 +22,8 @@ VEKTOR is a disaster intelligence and emergency relief coordination platform. It
                         │                                                     │
              ┌──────────┴──────────┐                               ┌──────────┴──────────┐
              ▼                     ▼                               ▼          ▼          ▼
-        SQLite DB             OSRM Router                    Google News   Open-Meteo   Qwen2.5-VL
-       (vektor.db)          (OpenStreetMap)                    / GDELT      Weather       Vision
+        SQLite DB             OSRM Router                    Google News   Open-Meteo    Gemini Vision
+       (vektor.db)          (OpenStreetMap)                    / GDELT      Weather       (3.1 Flash Lite)
 ```
 
 ---
@@ -32,15 +32,21 @@ VEKTOR is a disaster intelligence and emergency relief coordination platform. It
 
 ### 1. Intelligence Service (`intelligence/`)
 
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `VISION_INFERENCE_URL` | Public/hosted inference endpoint URL (Ollama `/api/generate` or compatible). In production on Render, set this to your hosted inference server. | Local: `http://localhost:11434/api/generate` |
-| `VISION_MODEL` | Vision model tag | `qwen2.5vl:3b` |
-| `VISION_API_KEY` | Optional Bearer authentication token for secured remote vision endpoints | *(Optional)* |
-| `VISION_TIMEOUT_SECONDS` | Request read timeout in seconds | `25.0` |
-| `VISION_CONNECT_TIMEOUT_SECONDS` | Fast-fail connection timeout in seconds (prevents 504 gateway hangs if remote endpoint is down) | `5.0` |
+Configure these environment variables in your Render service settings:
 
-> **Note on Vision Resilience**: If the configured vision inference service is unreachable or down, the Intelligence engine does **not** crash or fabricate data; it returns a user-friendly `unavailable` status while fully preserving the rest of the incident report (news, weather, and logistics staging).
+| Variable | Description | Required | Default / Example |
+| :--- | :--- | :--- | :--- |
+| `VISION_PROVIDER` | Active vision provider: `gemini` (production) or `ollama` (local) | **Yes** | `gemini` |
+| `GEMINI_API_KEY` | Google Gemini API key for vision multimodal inference | **Yes** (if `gemini`) | *Your Google AI Studio API Key* |
+| `GEMINI_MODEL` | Gemini model ID | No | `gemini-3.1-flash-lite` |
+| `VISION_INFERENCE_URL` | Optional remote Ollama endpoint URL (if using Ollama provider) | No | `http://localhost:11434/api/generate` |
+| `VISION_MODEL` | Optional Ollama model name | No | `qwen2.5vl:3b` |
+| `VISION_TIMEOUT_SECONDS` | Request read timeout | No | `25.0` |
+| `VISION_CONNECT_TIMEOUT_SECONDS` | Fast connection timeout | No | `5.0` |
+
+> **Production Resilience**:
+> - **Gemini Vision**: The service connects via the official `google-genai` SDK using `gemini-3.1-flash-lite`. API keys are securely read from the environment and never printed, logged, or leaked.
+> - **Graceful Failure**: If the vision API returns quota errors (429) or is temporarily unavailable, the system safely marks vision as `unavailable` while fully preserving news, weather telemetry, and logistics routing. AI results are **never** fabricated.
 
 ### 2. Logistics Service (`logistics/`)
 
@@ -92,11 +98,11 @@ Open your browser at: **`http://localhost:5173/`**
 
 ## Production Reliability Features
 
+- **Google Gemini 3.1 Flash Lite Vision**: Official `google-genai` SDK async integration with structured JSON responses.
 - **Open-Meteo 429 Rate-Limit Protection**: In-memory geocoding and forecast TTL caching, concurrent request deduplication, and exponential backoff retry. Gracefully handles HTTP 429 without crashing.
-- **Vision Inference Isolation**: Fast connection timeout (5s) prevents gateway timeouts on Render. Never fabricates AI values.
+- **Vision Inference Isolation**: Fast connection timeout prevents gateway timeouts on Render. Never fabricates AI values.
 - **ChatGPT-Inspired Minimalist Dark UI**: Almost-black background (`#0d0d0d`), charcoal panels, subtle borders, clean typography.
 - **Multimodal Visual Evidence Triage**: Visual hazard classification, severity ratings, confidence levels, visible persons identified, visual indicators checklist, and operational recommendations.
-- **AI Model Attribution**: Visible attribution to `Qwen2.5-VL 3B` with clear ground-truth verification notice.
 - **Emergency Supply Transit Map**: Interactive Leaflet map rendering OSRM driving routes from incident coordinates to the nearest regional relief hub.
 - **Stockpile Allocation Table**: Detailed inventory fulfillment against local stocks (`logistics/vektor.db`) with shortage alerts.
 - **Human-in-the-Loop Mission Approval**: Clearly labeled demo approval interaction indicating current backend architecture.

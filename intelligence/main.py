@@ -1,5 +1,10 @@
+import os
 from dotenv import load_dotenv
+
 load_dotenv()
+_local_env = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(_local_env):
+    load_dotenv(_local_env)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

@@ -112,7 +112,7 @@ export default function App() {
 
     const timer3 = setTimeout(() => {
       if (file) {
-        setLoadingStep('Running Qwen2.5-VL 3B visual tensor inspection...');
+        setLoadingStep('Evaluating visual hazard indicators with Gemini Vision...');
       } else {
         setLoadingStep('Evaluating geographic hazard indicators...');
       }

@@ -201,7 +201,7 @@ export default function ChatInput({
               </div>
               <span className="text-[11px] text-zinc-400 flex items-center gap-1 mt-0.5">
                 <Sparkles className="w-3 h-3 text-blue-400" />
-                Ready for Qwen2.5-VL 3B visual analysis
+                Ready for AI multimodal visual analysis
               </span>
             </div>
 
@@ -299,7 +299,7 @@ export default function ChatInput({
           </div>
           <div className="flex items-center justify-between text-[10px] text-zinc-500">
             <span>• Open-Meteo & GDELT</span>
-            <span>• Qwen2.5-VL 3B Model</span>
+            <span>• Gemini Vision AI</span>
             <span>• OSRM Routing Engine</span>
           </div>
         </div>

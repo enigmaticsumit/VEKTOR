@@ -156,7 +156,7 @@ export default function SettingsModal({
         <div className="pt-2 border-t border-zinc-800/80 text-[11px] text-zinc-500 space-y-1.5">
           <div className="flex items-center justify-between text-zinc-400">
             <span>Model Core</span>
-            <span className="font-mono text-zinc-300">Qwen2.5-VL 3B (Ollama)</span>
+            <span className="font-mono text-zinc-300">Gemini 3.1 Flash Lite / Qwen2.5-VL</span>
           </div>
           <div className="flex items-center justify-between text-zinc-400">
             <span>Telemetry</span>
