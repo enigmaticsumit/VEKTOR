@@ -14,7 +14,8 @@ import {
   AlertTriangle,
   Layers,
   ShieldCheck,
-  Activity
+  Activity,
+  Satellite
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -144,6 +145,22 @@ export default function Sidebar({
           >
             <Radio className="w-4 h-4 text-zinc-400" />
             {(isOpen || isMobile) && <span>Intelligence</span>}
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveView('satellite');
+              if (isMobile) onCloseMobile();
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+              activeView === 'satellite'
+                ? 'bg-zinc-800/80 text-zinc-100 font-semibold'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+            } ${!isOpen && !isMobile ? 'justify-center px-0' : ''}`}
+            title="Copernicus Sentinel-2 Imagery"
+          >
+            <Satellite className="w-4 h-4 text-blue-400" />
+            {(isOpen || isMobile) && <span>Satellite Recon</span>}
           </button>
 
           <button

@@ -12,7 +12,8 @@ import {
   Layers,
   Sparkles,
   ArrowRight,
-  Boxes
+  Boxes,
+  Satellite
 } from 'lucide-react';
 import VisionAnalysisCard from './VisionAnalysisCard';
 import WeatherCard from './WeatherCard';
@@ -20,11 +21,13 @@ import NewsFeed from './NewsFeed';
 import LogisticsMap from './LogisticsMap';
 import SuppliesTable from './SuppliesTable';
 import MissionApproval from './MissionApproval';
+import SatelliteViewer from './SatelliteViewer';
 
 export default function ResultsView({
   response,
   onOpenManualPlanner,
-  activeTab = 'all', // 'all' | 'intelligence' | 'logistics' | 'news' | 'weather'
+  onAnalyzeSatellite,
+  activeTab = 'all', // 'all' | 'intelligence' | 'logistics' | 'news' | 'weather' | 'satellite'
 }) {
   const [tab, setTab] = useState(activeTab);
 
@@ -89,6 +92,7 @@ export default function ResultsView({
         {[
           { id: 'all', label: 'Complete Briefing', icon: Layers },
           { id: 'intelligence', label: 'Vision & Triage', icon: Eye },
+          { id: 'satellite', label: 'Satellite Recon', icon: Satellite },
           { id: 'weather', label: 'Weather Telemetry', icon: CloudSun },
           { id: 'news', label: 'News Signals', icon: Newspaper },
           { id: 'logistics', label: 'Relief Logistics', icon: Truck },
@@ -211,6 +215,22 @@ export default function ResultsView({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* SECTION 4: Sentinel-2 Earth Observation Satellite Recon */}
+        {(tab === 'all' || tab === 'satellite') && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              <Satellite className="w-3.5 h-3.5 text-blue-400" />
+              <span>Copernicus Sentinel-2 Satellite Reconnaissance</span>
+            </div>
+            <SatelliteViewer
+              defaultLocationName={location}
+              defaultLat={weather?.coordinates?.latitude || 32.7353}
+              defaultLon={weather?.coordinates?.longitude || 74.8617}
+              onAnalyzeWithGemini={onAnalyzeSatellite}
+            />
           </div>
         )}
       </div>

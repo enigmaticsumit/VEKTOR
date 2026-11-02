@@ -13,6 +13,8 @@ export default function Header({
     switch (activeView) {
       case 'intelligence':
         return 'Disaster Intelligence Feed';
+      case 'satellite':
+        return 'Sentinel-2 Satellite Reconnaissance';
       case 'logistics':
         return 'Relief Supply & Mission Dispatch';
       default:

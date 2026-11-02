@@ -8,8 +8,12 @@ import {
   Loader2,
   Sparkles,
   AlertCircle,
-  FileText
+  FileText,
+  Satellite,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
+import SatelliteViewer from './SatelliteViewer';
 
 export default function ChatInput({
   onAnalyze,
@@ -23,6 +27,8 @@ export default function ChatInput({
   const [filePreview, setFilePreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [validationError, setValidationError] = useState('');
+  const [showSatellite, setShowSatellite] = useState(false);
+  const [isSatelliteOrigin, setIsSatelliteOrigin] = useState(false);
   
   const fileInputRef = useRef(null);
   const textInputRef = useRef(null);
@@ -83,9 +89,24 @@ export default function ChatInput({
   const handleRemoveFile = () => {
     setSelectedFile(null);
     setFilePreview(null);
+    setIsSatelliteOrigin(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleSatelliteAnalyze = ({ file, location: satLoc }) => {
+    setSelectedFile(file);
+    setIsSatelliteOrigin(true);
+    setShowSatellite(false);
+    const finalLocation = satLoc || location;
+    if (satLoc) {
+      setLocation(satLoc);
+    }
+    onAnalyze({
+      location: finalLocation,
+      file,
+    });
   };
 
   const handleSubmit = (e) => {
@@ -198,10 +219,17 @@ export default function ChatInput({
                 <span className="text-[10px] text-zinc-500 uppercase font-mono">
                   {(selectedFile.size / 1024).toFixed(0)} KB
                 </span>
+                {isSatelliteOrigin && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">
+                    Sentinel-2
+                  </span>
+                )}
               </div>
               <span className="text-[11px] text-zinc-400 flex items-center gap-1 mt-0.5">
                 <Sparkles className="w-3 h-3 text-blue-400" />
-                Ready for AI multimodal visual analysis
+                {isSatelliteOrigin
+                  ? 'Sentinel-2 earth observation pass ready for Gemini Vision evaluation'
+                  : 'Ready for AI multimodal visual analysis'}
               </span>
             </div>
 
@@ -238,6 +266,21 @@ export default function ChatInput({
 
           {/* Actions */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Satellite Imagery Recon Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowSatellite(!showSatellite)}
+              disabled={isLoading}
+              title={showSatellite ? 'Hide Satellite Recon' : 'Fetch Copernicus Sentinel-2 satellite pass'}
+              className={`p-2 rounded-xl transition-all ${
+                showSatellite
+                  ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+              } disabled:opacity-40`}
+            >
+              <Satellite className="w-4 h-4" />
+            </button>
+
             {/* Upload Button */}
             <button
               type="button"
@@ -283,6 +326,16 @@ export default function ChatInput({
           </div>
         )}
       </div>
+
+      {/* Copernicus Sentinel-2 Satellite Recon Drawer */}
+      {showSatellite && (
+        <div className="mt-4 animate-fade-in">
+          <SatelliteViewer
+            defaultLocationName={location}
+            onAnalyzeWithGemini={handleSatelliteAnalyze}
+          />
+        </div>
+      )}
 
       {/* Real-time Progress Bar while running */}
       {isLoading && (

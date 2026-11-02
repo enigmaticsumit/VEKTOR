@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ChatInput from './components/ChatInput';
 import ResultsView from './components/ResultsView';
+import SatelliteViewer from './components/SatelliteViewer';
 import ManualPlannerModal from './components/ManualPlannerModal';
 import SettingsModal from './components/SettingsModal';
 import { checkBackendHealth, runFullAnalysis } from './services/api';
@@ -19,7 +20,8 @@ import {
   Radio,
   Truck,
   Compass,
-  ArrowRight
+  ArrowRight,
+  Satellite
 } from 'lucide-react';
 
 export default function App() {
@@ -283,55 +285,80 @@ export default function App() {
             </div>
           )}
 
-          {/* ChatGPT-style Command Bar */}
-          <ChatInput
-            onAnalyze={handleAnalyze}
-            isLoading={isLoading}
-            loadingStep={loadingStep}
-            hasResult={!!currentResponse}
-            defaultLocation="Jammu"
-          />
-
-          {/* Dynamic Views based on active navigation */}
-          {currentResponse ? (
-            <div ref={resultsRef}>
-              <ResultsView
-                response={currentResponse}
-                onOpenManualPlanner={() => setIsManualPlannerOpen(true)}
-                activeTab={
-                  activeView === 'intelligence'
-                    ? 'intelligence'
-                    : activeView === 'logistics'
-                    ? 'logistics'
-                    : 'all'
-                }
+          {/* Dedicated Satellite Reconnaissance View */}
+          {activeView === 'satellite' ? (
+            <div className="max-w-4xl mx-auto w-full px-4 py-4 animate-fade-in">
+              <SatelliteViewer
+                defaultLocationName={currentResponse?.location || 'Jammu'}
+                onAnalyzeWithGemini={({ file, location }) => {
+                  setActiveView('workspace');
+                  handleAnalyze({ location, file });
+                }}
               />
             </div>
           ) : (
-            /* Empty State Guidance */
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-zinc-500 space-y-4 max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
-                <Compass className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-zinc-300">
-                  Ready for Incident Query
-                </h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">
-                  Enter an incident location or drag-and-drop disaster imagery to synthesize multi-modal intelligence and relief routing.
-                </p>
-              </div>
+            <>
+              {/* ChatGPT-style Command Bar */}
+              <ChatInput
+                onAnalyze={handleAnalyze}
+                isLoading={isLoading}
+                loadingStep={loadingStep}
+                hasResult={!!currentResponse}
+                defaultLocation="Jammu"
+              />
 
-              <div className="pt-2 flex items-center gap-2">
-                <button
-                  onClick={() => setIsManualPlannerOpen(true)}
-                  className="px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors"
-                >
-                  <Truck className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Manual Supply Planner</span>
-                </button>
-              </div>
-            </div>
+              {/* Dynamic Views based on active navigation */}
+              {currentResponse ? (
+                <div ref={resultsRef}>
+                  <ResultsView
+                    response={currentResponse}
+                    onOpenManualPlanner={() => setIsManualPlannerOpen(true)}
+                    onAnalyzeSatellite={({ file, location }) => {
+                      handleAnalyze({ location, file });
+                    }}
+                    activeTab={
+                      activeView === 'intelligence'
+                        ? 'intelligence'
+                        : activeView === 'logistics'
+                        ? 'logistics'
+                        : 'all'
+                    }
+                  />
+                </div>
+              ) : (
+                /* Empty State Guidance */
+                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-zinc-500 space-y-4 max-w-md mx-auto">
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+                    <Compass className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-semibold text-zinc-300">
+                      Ready for Incident Query
+                    </h3>
+                    <p className="text-xs text-zinc-500 leading-relaxed">
+                      Enter an incident location or drag-and-drop disaster imagery to synthesize multi-modal intelligence and relief routing.
+                    </p>
+                  </div>
+
+                  <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      onClick={() => setActiveView('satellite')}
+                      className="px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors"
+                    >
+                      <Satellite className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Copernicus Satellite Recon</span>
+                    </button>
+                    <button
+                      onClick={() => setIsManualPlannerOpen(true)}
+                      className="px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors"
+                    >
+                      <Truck className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Manual Supply Planner</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>

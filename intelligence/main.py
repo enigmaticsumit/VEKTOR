@@ -6,14 +6,13 @@ _local_env = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(_local_env):
     load_dotenv(_local_env)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from news import fetch_disaster_news
 from weather import fetch_current_weather
-from fastapi import UploadFile, File, HTTPException
 from vision import analyze_disaster_image
-from fastapi import Form
 from report import generate_intelligence_report
+from satellite import fetch_latest_sentinel2, get_satellite_asset_bytes
 
 app = FastAPI(
     title="VEKTOR - Disaster Intelligence",
@@ -113,3 +112,46 @@ async def intelligence_report(
         image_bytes=image_bytes,
         mime_type=mime_type
     )
+
+@app.get("/satellite/sentinel2")
+async def get_sentinel2_imagery(
+    latitude: float = Query(..., description="Target latitude (-90 to 90)"),
+    longitude: float = Query(..., description="Target longitude (-180 to 180)"),
+    days: int = Query(30, ge=1, le=180, description="Acquisition lookback in days"),
+    max_cloud_cover: float = Query(100.0, ge=0.0, le=100.0, description="Max cloud cover %")
+):
+    """
+    Retrieves the latest Copernicus Sentinel-2 satellite imagery for a given coordinate point.
+    Returns preview metadata, cloud coverage, acquisition timestamp, and base64 preview.
+    """
+    try:
+        result = await fetch_latest_sentinel2(
+            latitude=latitude,
+            longitude=longitude,
+            days=days,
+            max_cloud_cover=max_cloud_cover
+        )
+        return result
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Satellite imagery service error: {str(exc)}"
+        )
+
+@app.get("/satellite/image/{asset_id}")
+async def get_satellite_image(asset_id: str):
+    """
+    Proxies binary JPEG imagery from Copernicus Data Space for an authorized asset ID.
+    """
+    try:
+        image_bytes = await get_satellite_asset_bytes(asset_id)
+        return Response(content=image_bytes, media_type="image/jpeg")
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to fetch satellite asset: {str(exc)}"
+        )

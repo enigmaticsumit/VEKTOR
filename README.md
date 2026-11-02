@@ -39,14 +39,18 @@ Configure these environment variables in your Render service settings:
 | `VISION_PROVIDER` | Active vision provider: `gemini` (production) or `ollama` (local) | **Yes** | `gemini` |
 | `GEMINI_API_KEY` | Google Gemini API key for vision multimodal inference | **Yes** (if `gemini`) | *Your Google AI Studio API Key* |
 | `GEMINI_MODEL` | Gemini model ID | No | `gemini-3.1-flash-lite` |
+| `COPERNICUS_CLIENT_ID` | Copernicus Data Space OAuth Client ID for Sentinel-2 satellite imagery | **Yes** (for satellite) | *Your Copernicus Client ID* |
+| `COPERNICUS_CLIENT_SECRET` | Copernicus Data Space OAuth Client Secret | **Yes** (for satellite) | *Your Copernicus Client Secret* |
 | `VISION_INFERENCE_URL` | Optional remote Ollama endpoint URL (if using Ollama provider) | No | `http://localhost:11434/api/generate` |
 | `VISION_MODEL` | Optional Ollama model name | No | `qwen2.5vl:3b` |
 | `VISION_TIMEOUT_SECONDS` | Request read timeout | No | `25.0` |
 | `VISION_CONNECT_TIMEOUT_SECONDS` | Fast connection timeout | No | `5.0` |
 
-> **Production Resilience**:
-> - **Gemini Vision**: The service connects via the official `google-genai` SDK using `gemini-3.1-flash-lite`. API keys are securely read from the environment and never printed, logged, or leaked.
-> - **Graceful Failure**: If the vision API returns quota errors (429) or is temporarily unavailable, the system safely marks vision as `unavailable` while fully preserving news, weather telemetry, and logistics routing. AI results are **never** fabricated.
+> **Production Resilience & Data Integrity**:
+> - **Copernicus Sentinel-2 Satellite Imagery**: Uses Copernicus Data Space Ecosystem (CDSE) OAuth 2.0 Client Credentials flow with in-memory token lifecycle caching to retrieve real-time Sentinel-2 L2A/L1C optical imagery intersecting incident coordinates.
+> - **Multimodal Satellite Assessment**: Fetched satellite passes can be directly forwarded to Google Gemini Vision (`gemini-3.1-flash-lite`) for automated inundation, landslide, and terrain damage assessment.
+> - **Gemini Vision**: The service connects via the official `google-genai` SDK using `gemini-3.1-flash-lite`. API keys and credentials are securely read from the environment and never printed, logged, or committed to git.
+> - **Graceful Failure**: If satellite or vision APIs return quota errors or are temporarily unavailable, the system safely reports clear error states while preserving news, weather telemetry, and logistics routing. Values are **never** fabricated.
 
 ### 2. Logistics Service (`logistics/`)
 

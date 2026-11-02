@@ -145,3 +145,63 @@ export async function createReliefPlan({ location, disasterType, signal }) {
     throw err;
   }
 }
+
+/**
+ * Fetch latest Sentinel-2 earth observation satellite imagery via Copernicus Data Space
+ */
+export async function fetchSentinel2Imagery({ latitude, longitude, days = 30, maxCloudCover = 100, signal }) {
+  const { intelligence } = getApiUrls();
+  const params = new URLSearchParams({
+    latitude: String(latitude),
+    longitude: String(longitude),
+    days: String(days),
+    max_cloud_cover: String(maxCloudCover),
+  });
+
+  const endpoint = `${intelligence}/satellite/sentinel2?${params.toString()}`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      signal,
+    });
+
+    if (!response.ok) {
+      let message = `Failed to fetch satellite imagery (HTTP ${response.status})`;
+      try {
+        const errJson = await response.json();
+        if (errJson.detail) message = errJson.detail;
+      } catch {
+        const text = await response.text();
+        if (text) message = text;
+      }
+      throw new Error(message);
+    }
+
+    return await response.json();
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    if (err.message?.includes('Failed to fetch')) {
+      throw new Error(
+        `Unable to reach VEKTOR Intelligence Satellite API at ${intelligence}. Ensure the service is active.`
+      );
+    }
+    throw err;
+  }
+}
+
+/**
+ * Utility to convert base64 image data URL into a File object for Gemini Vision input
+ */
+export function base64ToFile(dataUrl, filename = 'sentinel2_latest.jpg') {
+  const arr = dataUrl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
